@@ -24,7 +24,9 @@ conda create -n "$env_name" python=3.9
 check_success "Failed to create conda environment $env_name"
 
 echo "Activating conda environment: $env_name"
-source activate "$env_name" || conda activate "$env_name"
+source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
+conda activate "$env_name"
+# source activate "$env_name" || conda activate "$env_name"
 check_success "Failed to activate conda environment $env_name"
 
 # Install Dependencies
@@ -40,7 +42,7 @@ check_success "Failed to install FIRM3D"
 cd ..
 
 # BOOZ_XFORM Installation
-cd booz_xform || { echo "Error: booz_xform directory not found. Exiting."; exit 1; }
+cd ../booz_xform || { echo "Error: booz_xform directory not found. Exiting."; exit 1; }
 env CC=$CONDA_PREFIX/bin/mpicc CXX=$CONDA_PREFIX/bin/mpicxx pip install -e .
 check_success "Failed to install BOOZ_XFORM"
 cd ..

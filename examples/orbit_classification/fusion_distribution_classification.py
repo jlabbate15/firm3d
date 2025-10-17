@@ -38,13 +38,13 @@ except ImportError:
 time1 = time.time()
 
 resolution = 48  # Resolution for field interpolation
-nParticles = 5000  # Number of particles to trace
+nParticles = 1500  # Number of particles to trace
 reltol = 1e-8  # Relative tolerance for the ODE solver
 abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
-boozmn_filename = "../inputs/boozmn_ariescs.nc"
-tmax = 1e-2  # Time for integration
+boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
+tmax = 1e-1  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
 nzeta_interp = resolution
@@ -54,13 +54,15 @@ helicity_N = 0
 dt_save = 1e-7  # Time interval for saving trajectory points
 
 # Redirect stdout to file for entire script duration
-stdout_file = open(  # noqa: SIM115
-    f"stdout_{nParticles}_{resolution}_{comm_size}.txt", "a", buffering=1
-)
-sys.stdout = stdout_file
+# stdout_file = open(  # noqa: SIM115
+#     f"stdout_{nParticles}_{resolution}_{comm_size}.txt", "a", buffering=1
+# )
+# sys.stdout = stdout_file
 
 ## Setup radial interpolation
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm)
+
+print('here0')
 
 ## Setup 3d interpolation
 field = InterpolatedBoozerField(
@@ -70,6 +72,8 @@ field = InterpolatedBoozerField(
     ntheta_interp=ntheta_interp,
     nzeta_interp=nzeta_interp,
 )
+
+print('here1')
 
 # Define fusion birth distribution
 # Bader, A., et al. "Modeling of energetic particle transport in optimized
@@ -100,6 +104,8 @@ charge = ALPHA_PARTICLE_CHARGE
 # Initialize uniformly distributed parallel velocities
 vpar0 = np.sqrt(2 * Ekin / mass)
 vpar_init = initialize_velocity_uniform(vpar0, nParticles, comm=comm, seed=0)
+
+print('here3')
 
 first, last = parallel_loop_bounds(comm, nParticles)
 for iParticle in range(first, last):

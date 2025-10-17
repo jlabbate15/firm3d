@@ -15,15 +15,15 @@ from firm3d.util.constants import (
 from firm3d.util.functions import proc0_print, setup_logging
 from firm3d.util.mpi import comm_size, comm_world, verbose
 
-boozmn_filename = "../inputs/boozmn_beta2.5_QA.nc"
+boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
 
 charge = ALPHA_PARTICLE_CHARGE
 mass = ALPHA_PARTICLE_MASS
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY * 0.0001
 
 resolution = 48  # Resolution for field interpolation
-neta_poinc = 5  # Number of eta initial conditions for poincare
-ns_poinc = 120  # Number of s initial conditions for poincare
+neta_poinc = 30  # Number of eta initial conditions for poincare
+ns_poinc = 10  # Number of s initial conditions for poincare
 Nmaps = 1000  # Number of Poincare return maps to compute
 ns_interp = resolution  # number of radial grid points for interpolation
 ntheta_interp = resolution  # number of poloidal grid points for interpolation
@@ -38,7 +38,7 @@ helicity_N = 0
 degree = 3  # Degree for Lagrange interpolation
 
 # Setup logging to redirect output to file
-setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
+#setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
 
 time1 = time.time()
 
@@ -67,7 +67,7 @@ poinc = TrappedPoincare(
     Nmaps=Nmaps,
     comm=comm_world,
     solver_options={"reltol": tol, "abstol": tol, "axis": 0},
-    tmax=1e-4,
+    tmax=1e-2,
 )
 
 if verbose:
