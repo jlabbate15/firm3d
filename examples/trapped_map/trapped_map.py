@@ -98,7 +98,7 @@ if call_DESC:
     rhos = (np.linspace(0.1,0.9,50))**(1/2) # rho = sqrt(s)
     alphas = np.linspace(0,2*np.pi,3)
     KE_frac = np.array([1]) #did 0.001 before
-    pitch_invs = jnp.linspace(6.0,6.1,1)
+    pitch_invs = jnp.array([modBin])
     N=0 # QA
 
     out = TrappedResonanceObj(eq,rhos,pitch_invs,KE_frac,alphas,N)
@@ -110,7 +110,7 @@ if call_DESC:
     Z = np.transpose(np.tile(obj_val, (5, 1)))
     cs = ax.contourf(X,Y,Z,cmap='Blues')
     fig.colorbar(cs, ax=ax)
-    
+
     ax = poinc.plot_poincare(ax=ax)
     ax.figure.savefig('poincare_objective_overlay.png')
 
