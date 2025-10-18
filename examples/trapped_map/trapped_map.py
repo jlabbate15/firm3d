@@ -79,25 +79,23 @@ poinc = TrappedPoincare(
     tmax=tmax,
 )
 
-if verbose:
-    ax = poinc.plot_poincare()
+# time2 = time.time()
 
-time2 = time.time()
-
-proc0_print("poincare time: ", time2 - time1)
+# proc0_print("poincare time: ", time2 - time1)
 
 
 # Extra plotting: Plotting the objective function over the Poincare plot
 # Plot objective function value on top of it
 if call_DESC:
-    import matplotlib
+    import matplotlib.pyplot as plt
     from desc.ResonanceOpt.TRObj_func import TrappedResonanceObj
     import desc.io
     import jax.numpy as jnp
 
     # Run DESC objective function
+    fig, ax = plt.subplots()
     eq = desc.io.load("../inputs/equil_G1600_DESC_fixed.h5")
-    rhos = (np.linspace(0.1,0.9,20))**(1/2) # rho = sqrt(s)
+    rhos = (np.linspace(0.1,0.9,50))**(1/2) # rho = sqrt(s)
     alphas = np.linspace(0,2*np.pi,3)
     KE_frac = np.array([1]) #did 0.001 before
     pitch_invs = jnp.linspace(6.0,6.1,1)
@@ -108,9 +106,13 @@ if call_DESC:
     s_obj = np.linspace(0.1,0.9,len(obj_val))
 
     Y = s_obj
-    X = np.linspace(0,np.pi,5)
+    X = np.linspace(0,2*np.pi,5)
     Z = np.transpose(np.tile(obj_val, (5, 1)))
-    cs = ax.contourf(X,Y,Z,zorder=1,cmap='Blues')
-    ax.figure.colorbar(cs, ax=ax)
-
+    cs = ax.contourf(X,Y,Z,cmap='Blues')
+    fig.colorbar(cs, ax=ax)
+    
+    ax = poinc.plot_poincare(ax=ax)
     ax.figure.savefig('poincare_objective_overlay.png')
+
+if verbose and not call_DESC:
+    ax = poinc.plot_poincare(ax=ax)
