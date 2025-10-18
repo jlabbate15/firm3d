@@ -447,6 +447,7 @@ class TrappedPoincare:
         mass,
         charge,
         Ekin,
+        modBin,
         ns_poinc=None,
         neta_poinc=None,
         s_init=None,
@@ -476,6 +477,7 @@ class TrappedPoincare:
             mass : Particle mass.
             charge : Particle charge.
             Ekin : Particle total energy.
+            modBin : Sets pitch inverse.
             s_init : List of initial s coordinates for the Poincare map.
                      (default: None, ns_poinc is used instead)
             etas_init : List of initial eta coordinates for the Poincare map.
@@ -511,8 +513,8 @@ class TrappedPoincare:
         self.theta_mirror = theta_mirror
         self.zeta_mirror = zeta_mirror
         field.set_points(np.array([[s_mirror], [theta_mirror], [zeta_mirror]]).T)
-        self.modBcrit = field.modB()[0, 0]  # Magnetic field at mirror point
-        self.modBcrit = 6.0
+        # self.modBcrit = field.modB()[0, 0]  # Magnetic field at mirror point
+        self.modBcrit = modBin
         self.lam = 1 / self.modBcrit  # lambda = v_perp^2/(v^2 B) = 1/modBcrit
         self.mass = mass
         self.charge = charge
@@ -541,6 +543,7 @@ class TrappedPoincare:
             self.chis_all,
             self.etas_all,
             self.t_all,
+            self.freq_all
         ) = self.compute_trapped_map()
 
     def chi(self, theta, zeta):
@@ -749,6 +752,7 @@ class TrappedPoincare:
         chis_all = []
         etas_all = []
         t_all = []
+        freq_all = []
         first, last = parallel_loop_bounds(self.comm, Ntrj)
         for itrj in range(first, last):
             tr = [self.s_init[itrj], self.chis_init[itrj], self.etas_init[itrj]]
@@ -781,6 +785,9 @@ class TrappedPoincare:
                 chis_all.append(chis_traj)
                 etas_all.append(etas_traj)
                 t_all.append(t_traj)
+                if (len(etas_traj)>1):
+                    delta_eta = (np.asarray(etas_traj[1::])-np.asarray(etas_traj[0:-1]))/(2*np.pi/self.field.nfp)
+                    freq_all.append(np.mean(np.asarray(delta_eta))) # Compute effective frequency of each orbit
 
         if self.comm is not None:
             s_all = [i for o in self.comm.allgather(s_all) for i in o]
@@ -788,9 +795,9 @@ class TrappedPoincare:
             etas_all = [i for o in self.comm.allgather(etas_all) for i in o]
             t_all = [i for o in self.comm.allgather(t_all) for i in o]
 
-        return s_all, chis_all, etas_all, t_all
+        return s_all, chis_all, etas_all, t_all, freq_all
 
-    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf"):
+    def plot_poincare(self, ax=None, filename="trapped_poincare"):
         r"""
         Plot the trapped Poincare map and save to a file. It is recommended to only
         call this function on MPI rank 0.

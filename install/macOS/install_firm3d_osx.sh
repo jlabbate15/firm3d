@@ -15,19 +15,19 @@ echo "Adding conda-forge channel..."
 conda config --add channels conda-forge
 check_success "Failed to add conda-forge channel"
 
-echo "Enter the name for the new conda environment (e.g., firm3d):"
-read -p "Your input: " env_name
-# Add validation for env_name if needed
+# echo "Enter the name for the new conda environment (e.g., firm3d):"
+# read -p "Your input: " env_name
+# # Add validation for env_name if needed
 
-echo "Creating conda environment: $env_name"
-conda create -n "$env_name" python=3.9
-check_success "Failed to create conda environment $env_name"
+# echo "Creating conda environment: $env_name"
+# conda create -n "$env_name" python=3.9
+# check_success "Failed to create conda environment $env_name"
 
-echo "Activating conda environment: $env_name"
-source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
-conda activate "$env_name"
-# source activate "$env_name" || conda activate "$env_name"
-check_success "Failed to activate conda environment $env_name"
+# echo "Activating conda environment: $env_name"
+# source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
+# conda activate "$env_name"
+# # source activate "$env_name" || conda activate "$env_name"
+# check_success "Failed to activate conda environment $env_name"
 
 # Install Dependencies
 echo "Installing FIRM3D dependencies..."
@@ -36,7 +36,7 @@ pip install mpi4py
 check_success "Failed to install FIRM3D dependencies"
 
 # FIRM3D Installation
-cd firm3d || { echo "Error: firm3d directory not found. Exiting."; exit 1; }
+cd ../../../firm3d || { echo "Error: firm3d directory not found. Exiting."; exit 1; }
 env CC=$CONDA_PREFIX/bin/mpicc CXX=$CONDA_PREFIX/bin/mpicxx pip install -e .
 check_success "Failed to install FIRM3D"
 cd ..
