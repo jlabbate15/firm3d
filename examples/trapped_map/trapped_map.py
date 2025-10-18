@@ -23,7 +23,6 @@ neta_poinc = 10  # Number of eta initial conditions for poincare
 ns_poinc = 10  # Number of s initial conditions for poincare
 Nmaps = 500  # Number of Poincare return maps to compute
 modBin = 6.0
-extra_plotting = True
 call_DESC = True
 tmax = 1e-2
 #######################
@@ -90,7 +89,7 @@ proc0_print("poincare time: ", time2 - time1)
 
 # Extra plotting: Plotting the objective function over the Poincare plot
 # Plot objective function value on top of it
-if extra_plotting:
+if call_DESC:
     import matplotlib
     from desc.ResonanceOpt.TRObj_func import TrappedResonanceObj
     import desc.io
@@ -98,26 +97,20 @@ if extra_plotting:
 
     # Run DESC objective function
     eq = desc.io.load("../inputs/equil_G1600_DESC_fixed.h5")
-    rhos = (np.linspace(0.1,0.9,50))**(1/2) # rho = sqrt(s)
+    rhos = (np.linspace(0.1,0.9,20))**(1/2) # rho = sqrt(s)
     alphas = np.linspace(0,2*np.pi,3)
     KE_frac = np.array([1]) #did 0.001 before
     pitch_invs = jnp.linspace(6.0,6.1,1)
     N=0 # QA
 
     out = TrappedResonanceObj(eq,rhos,pitch_invs,KE_frac,alphas,N)
-    obj_val = out[:,0,0] # Only look at rho, for one pitch, for one energy
+    obj_val = out['obj'][:,0,0] # Only look at rho, for one pitch, for one energy
     s_obj = np.linspace(0.1,0.9,len(obj_val))
 
     Y = s_obj
     X = np.linspace(0,np.pi,5)
     Z = np.transpose(np.tile(obj_val, (5, 1)))
-    ax.contourf(X,Y,Z,zorder=1,cmap='Blues')
-    ax.colorbar(label='Objective Function Value')
-    # ax.xlabel(r'$\zeta$')
-    # ax.ylabel(r'$s$')
-    # ax.xlim([0,2*np.pi/poinc.field.nfp])
-    # ax.ylim([0,1])
-    # for i in range(len(poinc.chis_all)):
-    #     plt.scatter(np.mod(poinc.zetas_all[i],2*np.pi/poinc.nfp), poinc.s_all[i], marker='o',s=0.5,color='black',edgecolors='none',zorder=3)
+    cs = ax.contourf(X,Y,Z,zorder=1,cmap='Blues')
+    ax.figure.colorbar(cs, ax=ax)
 
-    ax.savefig('poincare_objective_overlay.png')
+    ax.figure.savefig('poincare_objective_overlay.png')
