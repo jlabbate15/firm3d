@@ -18,12 +18,12 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY
-neta_poinc = 10  # Number of eta initial conditions for poincare
-ns_poinc = 10  # Number of s initial conditions for poincare
-Nmaps = 500  # Number of Poincare return maps to compute
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY*0.0001
+neta_poinc = 5  # Number of eta initial conditions for poincare
+ns_poinc = 100  # Number of s initial conditions for poincare
+Nmaps = 1000  # Number of Poincare return maps to compute
 modBin = 6.0
-call_DESC = True
+call_DESC = False
 tmax = 1e-2
 #######################
 
@@ -46,11 +46,15 @@ degree = 3  # Degree for Lagrange interpolation
 
 
 # Setup logging to redirect output to file
-#setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
+setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
 
 time1 = time.time()
 
+print("start BRI")
+
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
+
+print("start IBF")
 
 field = InterpolatedBoozerField(
     bri,
@@ -59,6 +63,8 @@ field = InterpolatedBoozerField(
     ntheta_interp=ntheta_interp,
     nzeta_interp=nzeta_interp,
 )
+
+print("start tracing")
 
 poinc = TrappedPoincare(
     field,
@@ -79,40 +85,42 @@ poinc = TrappedPoincare(
     tmax=tmax,
 )
 
-# time2 = time.time()
+time2 = time.time()
 
-# proc0_print("poincare time: ", time2 - time1)
+proc0_print("poincare time: ", time2 - time1)
 
 
 # Extra plotting: Plotting the objective function over the Poincare plot
 # Plot objective function value on top of it
-if call_DESC:
-    import matplotlib.pyplot as plt
-    from desc.ResonanceOpt.TRObj_func import TrappedResonanceObj
-    import desc.io
-    import jax.numpy as jnp
+# if call_DESC:
+#     import matplotlib.pyplot as plt
+#     from desc.ResonanceOpt.TRObj_func import TrappedResonanceObj
+#     import desc.io
+#     import jax.numpy as jnp
 
-    # Run DESC objective function
-    fig, ax = plt.subplots()
-    eq = desc.io.load("../inputs/equil_G1600_DESC_fixed.h5")
-    rhos = (np.linspace(0.1,0.9,50))**(1/2) # rho = sqrt(s)
-    alphas = np.linspace(0,2*np.pi,3)
-    KE_frac = np.array([1]) #did 0.001 before
-    pitch_invs = jnp.array([modBin])
-    N=0 # QA
+#     # Run DESC objective function
+#     fig, ax = plt.subplots()
+#     eq = desc.io.load("../inputs/equil_G1600_DESC_fixed.h5")
+#     rhos = (np.linspace(0.1,0.9,50))**(1/2) # rho = sqrt(s)
+#     alphas = np.linspace(0,2*np.pi,3)
+#     KE_frac = np.array([1]) #did 0.001 before
+#     pitch_invs = jnp.array([modBin])
+#     N=0 # QA
 
-    out = TrappedResonanceObj(eq,rhos,pitch_invs,KE_frac,alphas,N)
-    obj_val = out['obj'][:,0,0] # Only look at rho, for one pitch, for one energy
-    s_obj = np.linspace(0.1,0.9,len(obj_val))
+#     out = TrappedResonanceObj(eq,rhos,pitch_invs,KE_frac,alphas,N)
+#     obj_val = out['obj'][:,0,0] # Only look at rho, for one pitch, for one energy
+#     s_obj = np.linspace(0.1,0.9,len(obj_val))
 
-    Y = s_obj
-    X = np.linspace(0,2*np.pi,5)
-    Z = np.transpose(np.tile(obj_val, (5, 1)))
-    cs = ax.contourf(X,Y,Z,cmap='Blues')
-    fig.colorbar(cs, ax=ax)
+#     Y = s_obj
+#     X = np.linspace(0,2*np.pi,5)
+#     Z = np.transpose(np.tile(obj_val, (5, 1)))
+#     cs = ax.contourf(X,Y,Z,cmap='Blues')
+#     fig.colorbar(cs, ax=ax)
 
-    ax = poinc.plot_poincare(ax=ax)
-    ax.figure.savefig('poincare_objective_overlay.png')
+#     ax = poinc.plot_poincare(ax=ax)
+#     ax.figure.savefig('poincare_objective_overlay.png')
 
-if verbose and not call_DESC:
-    ax = poinc.plot_poincare(ax=ax)
+# if verbose and not call_DESC:
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+ax = poinc.plot_poincare(ax=ax)
