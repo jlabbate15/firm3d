@@ -18,13 +18,13 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY*0.0001
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
 neta_poinc = 5  # Number of eta initial conditions for poincare
-ns_poinc = 100  # Number of s initial conditions for poincare
+ns_poinc = 120  # Number of s initial conditions for poincare
 Nmaps = 1000  # Number of Poincare return maps to compute
 modBin = 6.0
 call_DESC = False
-tmax = 1e-2
+tmax = 1e-4
 #######################
 
 
@@ -46,7 +46,7 @@ degree = 3  # Degree for Lagrange interpolation
 
 
 # Setup logging to redirect output to file
-setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
+# setup_logging(f"stdout_trapped_map_{resolution}_{comm_size}.txt")
 
 time1 = time.time()
 
@@ -122,5 +122,10 @@ proc0_print("poincare time: ", time2 - time1)
 
 # if verbose and not call_DESC:
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots()
-ax = poinc.plot_poincare(ax=ax)
+fig, ax = plt.subplots(nrows=1, ncols=2)
+ax[0,0] = poinc.plot_poincare(ax=ax)
+
+# Plot frequencies
+ax[0,1].plot(poinc.s_all,poinc.freq_all)
+ax[0,1].set_xlabel('s [dim]')
+ax[0,1].set_ylabel(r'\omega_{\zeta} [dim]')

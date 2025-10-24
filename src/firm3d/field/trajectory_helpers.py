@@ -513,8 +513,8 @@ class TrappedPoincare:
         self.theta_mirror = theta_mirror
         self.zeta_mirror = zeta_mirror
         field.set_points(np.array([[s_mirror], [theta_mirror], [zeta_mirror]]).T)
-        # self.modBcrit = field.modB()[0, 0]  # Magnetic field at mirror point
-        self.modBcrit = modBin
+        self.modBcrit = field.modB()[0, 0]  # Magnetic field at mirror point
+        # self.modBcrit = modBin
         self.lam = 1 / self.modBcrit  # lambda = v_perp^2/(v^2 B) = 1/modBcrit
         self.mass = mass
         self.charge = charge
