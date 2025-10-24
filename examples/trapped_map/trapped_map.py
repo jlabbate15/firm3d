@@ -19,12 +19,12 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
 Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
-neta_poinc = 10  # Number of eta initial conditions for poincare
-ns_poinc = 135  # Number of s initial conditions for poincare
-Nmaps = 1000  # Number of Poincare return maps to compute
+neta_poinc = 1  # Number of eta initial conditions for poincare
+ns_poinc = 10  # Number of s initial conditions for poincare
+Nmaps = 200  # Number of Poincare return maps to compute
 modBin = 5.9
 call_DESC = False
-tmax = 1e-2
+tmax = 1e-4
 #######################
 
 
@@ -81,7 +81,7 @@ poinc = TrappedPoincare(
     neta_poinc=neta_poinc,
     Nmaps=Nmaps,
     comm=comm_world,
-    solver_options={"reltol": tol, "abstol": tol, "axis": 0},
+    solver_options={"reltol": tol, "abstol": tol, "axis": 2},
     tmax=tmax,
     s_init=(np.linspace(0,1,ns_interp))**2
 )
@@ -126,9 +126,13 @@ import matplotlib.pyplot as plt
 fig, ax = plt.subplots(nrows=1, ncols=2)
 ax[0] = poinc.plot_poincare(ax=ax)
 
+# print("freq shape: ", np.array(poinc.freq_all).shape)
+# print("freq: ",np.array(poinc.freq_all))
+# print("s shape: ",np.array(poinc.s_all).shape)
+# print("s: ", np.array(poinc.s_all[:,0]))
 # Plot frequencies - get Amelia's help
-# ax[1].plot(poinc.s_all,poinc.freq_all)
-# ax[1].set_xlabel('s [dim]')
-# ax[1].set_ylabel(r'\omega_{\zeta} [dim]')
-
-# plt.savefig("poincare_omega.pdf")
+ax[1].plot(np.array(poinc.freq_all),np.array(poinc.s_all)[:,0])
+ax[1].set_ylabel('$s$ [dim]')
+ax[1].set_xlabel(r'$\omega_{\zeta}$ [dim]')
+# plt.tight_layout()
+plt.savefig("poincare_omega.pdf")

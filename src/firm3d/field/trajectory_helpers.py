@@ -619,7 +619,7 @@ class TrappedPoincare:
             Ekin=self.Ekin,
             vpars=[0],
             stopping_criteria=[
-                MinToroidalFluxStoppingCriterion(0.01),
+                # MinToroidalFluxStoppingCriterion(0.0001),
                 MaxToroidalFluxStoppingCriterion(1.0),
             ],
             forget_exact_path=False,
@@ -795,6 +795,7 @@ class TrappedPoincare:
             chis_all = [i for o in self.comm.allgather(chis_all) for i in o]
             etas_all = [i for o in self.comm.allgather(etas_all) for i in o]
             t_all = [i for o in self.comm.allgather(t_all) for i in o]
+            freq_all = [i for o in self.comm.allgather(freq_all) for i in o]
 
         return s_all, chis_all, etas_all, t_all, freq_all
 
