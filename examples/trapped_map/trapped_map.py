@@ -19,12 +19,12 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
 Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
-neta_poinc = 5  # Number of eta initial conditions for poincare
-ns_poinc = 120  # Number of s initial conditions for poincare
+neta_poinc = 10  # Number of eta initial conditions for poincare
+ns_poinc = 135  # Number of s initial conditions for poincare
 Nmaps = 1000  # Number of Poincare return maps to compute
-modBin = 6.0
+modBin = 5.9
 call_DESC = False
-tmax = 1e-4
+tmax = 1e-2
 #######################
 
 
@@ -37,7 +37,7 @@ ntheta_interp = resolution  # number of poloidal grid points for interpolation
 nzeta_interp = resolution  # number of toroidal grid points for interpolation
 order = 3  # order for interpolation
 tol = 1e-8  # Tolerance for ODE solver
-s_mirror = 0.5  # flux surface for mirroring
+s_mirror = 0.2**2  # flux surface for mirroring
 theta_mirror = np.pi / 2  # poloidal angle for mirroring
 zeta_mirror = 0
 helicity_M = 1  # helicity of field strength contours
@@ -50,11 +50,11 @@ degree = 3  # Degree for Lagrange interpolation
 
 time1 = time.time()
 
-print("start BRI")
+# print("start BRI")
 
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
 
-print("start IBF")
+# print("start IBF")
 
 field = InterpolatedBoozerField(
     bri,
@@ -83,6 +83,7 @@ poinc = TrappedPoincare(
     comm=comm_world,
     solver_options={"reltol": tol, "abstol": tol, "axis": 0},
     tmax=tmax,
+    s_init=(np.linspace(0,1,ns_interp))**2
 )
 
 time2 = time.time()
@@ -123,9 +124,11 @@ proc0_print("poincare time: ", time2 - time1)
 # if verbose and not call_DESC:
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(nrows=1, ncols=2)
-ax[0,0] = poinc.plot_poincare(ax=ax)
+ax[0] = poinc.plot_poincare(ax=ax)
 
-# Plot frequencies
-ax[0,1].plot(poinc.s_all,poinc.freq_all)
-ax[0,1].set_xlabel('s [dim]')
-ax[0,1].set_ylabel(r'\omega_{\zeta} [dim]')
+# Plot frequencies - get Amelia's help
+# ax[1].plot(poinc.s_all,poinc.freq_all)
+# ax[1].set_xlabel('s [dim]')
+# ax[1].set_ylabel(r'\omega_{\zeta} [dim]')
+
+# plt.savefig("poincare_omega.pdf")

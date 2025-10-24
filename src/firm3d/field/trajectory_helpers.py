@@ -514,7 +514,8 @@ class TrappedPoincare:
         self.zeta_mirror = zeta_mirror
         field.set_points(np.array([[s_mirror], [theta_mirror], [zeta_mirror]]).T)
         self.modBcrit = field.modB()[0, 0]  # Magnetic field at mirror point
-        # self.modBcrit = modBin
+        self.modBcrit = modBin
+        print('Inverse Pitch = ',str(self.modBcrit))
         self.lam = 1 / self.modBcrit  # lambda = v_perp^2/(v^2 B) = 1/modBcrit
         self.mass = mass
         self.charge = charge
@@ -797,7 +798,7 @@ class TrappedPoincare:
 
         return s_all, chis_all, etas_all, t_all, freq_all
 
-    def plot_poincare(self, ax=None, filename="trapped_poincare"):
+    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf"):
         r"""
         Plot the trapped Poincare map and save to a file. It is recommended to only
         call this function on MPI rank 0.
@@ -818,14 +819,14 @@ class TrappedPoincare:
         if ax is None:
             fig, ax = plt.subplots()
 
-        ax.set_xlabel(r"$\eta$")
-        ax.set_ylabel(r"$s$")
-        ax.set_xlim([0, 2 * np.pi])
-        ax.set_ylim([0, 1])
+        ax[0].set_xlabel(r"$\eta$")
+        ax[0].set_ylabel(r"$\rho$")
+        ax[0].set_xlim([0, 2 * np.pi])
+        ax[0].set_ylim([0, 1])
         for i in range(len(self.etas_all)):
-            ax.scatter(
+            ax[0].scatter(
                 np.mod(self.etas_all[i], 2 * np.pi),
-                self.s_all[i],
+                np.sqrt(self.s_all[i]),
                 marker="o",
                 s=0.5,
                 edgecolors="none",
