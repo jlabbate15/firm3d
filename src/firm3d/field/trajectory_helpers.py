@@ -544,7 +544,7 @@ class TrappedPoincare:
             self.chis_all,
             self.etas_all,
             self.t_all,
-            self.freq_all
+            # self.freq_all
         ) = self.compute_trapped_map()
 
     def chi(self, theta, zeta):
@@ -708,6 +708,7 @@ class TrappedPoincare:
         # Create mesh grid if not provided directly
         if not hasattr(self, "s_init") or not hasattr(self, "etas_init"):
             etas = np.linspace(0, 2 * np.pi, self.neta_poinc, endpoint=False)
+            # etas = np.linspace(0, np.pi, self.neta_poinc, endpoint=False)
             s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::]
             etas2d, s2d = np.meshgrid(etas, s)
             etas2d = etas2d.flatten()
@@ -753,7 +754,7 @@ class TrappedPoincare:
         chis_all = []
         etas_all = []
         t_all = []
-        freq_all = []
+        # freq_all = []
         first, last = parallel_loop_bounds(self.comm, Ntrj)
         for itrj in range(first, last):
             tr = [self.s_init[itrj], self.chis_init[itrj], self.etas_init[itrj]]
@@ -786,20 +787,20 @@ class TrappedPoincare:
                 chis_all.append(chis_traj)
                 etas_all.append(etas_traj)
                 t_all.append(t_traj)
-                if (len(etas_traj)>1):
-                    delta_eta = (np.asarray(etas_traj[1::])-np.asarray(etas_traj[0:-1]))/(2*np.pi/self.field.nfp)
-                    freq_all.append(np.mean(np.asarray(delta_eta))) # Compute effective frequency of each orbit
+                # if (len(etas_traj)>1):
+                #     delta_eta = (np.asarray(etas_traj[1::])-np.asarray(etas_traj[0:-1]))/(2*np.pi/self.field.nfp)
+                #     freq_all.append(np.mean(np.asarray(delta_eta))) # Compute effective frequency of each orbit
 
         if self.comm is not None:
             s_all = [i for o in self.comm.allgather(s_all) for i in o]
             chis_all = [i for o in self.comm.allgather(chis_all) for i in o]
             etas_all = [i for o in self.comm.allgather(etas_all) for i in o]
             t_all = [i for o in self.comm.allgather(t_all) for i in o]
-            freq_all = [i for o in self.comm.allgather(freq_all) for i in o]
+            # freq_all = [i for o in self.comm.allgather(freq_all) for i in o]
 
-        return s_all, chis_all, etas_all, t_all, freq_all
+        return s_all, chis_all, etas_all, t_all
 
-    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf"):
+    def plot_poincare(self, ax=None, j=0, filename="trapped_poincare.pdf",save_points=False):
         r"""
         Plot the trapped Poincare map and save to a file. It is recommended to only
         call this function on MPI rank 0.
@@ -807,6 +808,7 @@ class TrappedPoincare:
         Args:
             ax : Matplotlib axis to plot on. If None, a new figure and axis are
                  created.
+            j : Which iteration of the ax to plot on
             filename : Name of the file to save the plot
                        (default: 'trapped_poincare.pdf').
         Returns:
@@ -820,19 +822,35 @@ class TrappedPoincare:
         if ax is None:
             fig, ax = plt.subplots()
 
-        ax[0].set_xlabel(r"$\eta$")
-        ax[0].set_ylabel(r"$\rho$")
-        ax[0].set_xlim([0, 2 * np.pi])
-        ax[0].set_ylim([0, 1])
+        ax[j].set_xlabel(r"$\zeta$")
+        ax[j].set_ylabel(r"$\rho$")
+        ax[j].set_xlim([0, 2 * np.pi])
+        ax[j].set_ylim([0, 1])
+        if j==0:
+            c='b'
+        elif j==1:
+            c='r'
+        eta_points = []
+        s_points = []
         for i in range(len(self.etas_all)):
-            ax[0].scatter(
+            ax[j].scatter(
                 np.mod(self.etas_all[i], 2 * np.pi),
                 np.sqrt(self.s_all[i]),
                 marker="o",
-                s=0.5,
+                s=0.3,
+                c=c,
                 edgecolors="none",
             )
-        plt.savefig(filename)
+            if save_points:
+                # print(self.etas_all[i])
+                # print(np.mod(self.etas_all[i], 2 * np.pi))
+                eta_points.append(np.mod(self.etas_all[i], 2 * np.pi))
+                s_points.append(np.sqrt(self.s_all[i]))
+        if save_points:
+            np.save(filename+'_etas',np.array(eta_points,dtype=object))
+            np.save(filename+'_s',np.array(s_points,dtype=object))
+                
+        # plt.savefig(filename)
 
         return ax
 

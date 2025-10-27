@@ -18,13 +18,13 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
-neta_poinc = 1  # Number of eta initial conditions for poincare
-ns_poinc = 10  # Number of s initial conditions for poincare
-Nmaps = 200  # Number of Poincare return maps to compute
-modBin = 5.9
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY*0.001
+neta_poinc = 5  # Number of eta initial conditions for poincare
+ns_poinc = 120  # Number of s initial conditions for poincare
+Nmaps = 1000  # Number of Poincare return maps to compute
+modBin = 5.95
 call_DESC = False
-tmax = 1e-4
+tmax = 1e-2
 #######################
 
 
@@ -52,6 +52,7 @@ time1 = time.time()
 
 # print("start BRI")
 
+# bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
 
 # print("start IBF")
@@ -62,6 +63,7 @@ field = InterpolatedBoozerField(
     ns_interp=ns_interp,
     ntheta_interp=ntheta_interp,
     nzeta_interp=nzeta_interp,
+    stellsym=True
 )
 
 print("start tracing")
@@ -81,7 +83,7 @@ poinc = TrappedPoincare(
     neta_poinc=neta_poinc,
     Nmaps=Nmaps,
     comm=comm_world,
-    solver_options={"reltol": tol, "abstol": tol, "axis": 2},
+    solver_options={"reltol": tol, "abstol": tol, "axis": 0},
     tmax=tmax,
     s_init=(np.linspace(0,1,ns_interp))**2
 )
@@ -90,6 +92,8 @@ time2 = time.time()
 
 proc0_print("poincare time: ", time2 - time1)
 
+# Compute frequencies
+omega_eta_prof, omega_b_prof, s_prof = poinc.compute_frequencies()
 
 # Extra plotting: Plotting the objective function over the Poincare plot
 # Plot objective function value on top of it
@@ -125,14 +129,10 @@ proc0_print("poincare time: ", time2 - time1)
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(nrows=1, ncols=2)
 ax[0] = poinc.plot_poincare(ax=ax)
-
-# print("freq shape: ", np.array(poinc.freq_all).shape)
-# print("freq: ",np.array(poinc.freq_all))
-# print("s shape: ",np.array(poinc.s_all).shape)
-# print("s: ", np.array(poinc.s_all[:,0]))
-# Plot frequencies - get Amelia's help
-ax[1].plot(np.array(poinc.freq_all),np.array(poinc.s_all)[:,0])
-ax[1].set_ylabel('$s$ [dim]')
-ax[1].set_xlabel(r'$\omega_{\zeta}$ [dim]')
-# plt.tight_layout()
+ax[1].plot(omega_eta_prof/omega_b_prof,s_prof**0.5)
+ax[1].set_xlabel(r'$\omega_{\zeta}$')
+ax[1].yaxis.set_label_position("right")
+ax[1].yaxis.tick_right()
+ax[1].set_ylabel(r'$\rho$')
+ax[1].set_ylim(0.0,1.0)
 plt.savefig("poincare_omega.pdf")
