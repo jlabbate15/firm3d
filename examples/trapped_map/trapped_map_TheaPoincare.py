@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-Ekins = FUSION_ALPHA_PARTICLE_ENERGY*np.array([1,0.001]) # left->right order will be left->right order on plot
+Ekins = FUSION_ALPHA_PARTICLE_ENERGY*np.array([1,0.02857142857142857]) # left->right order will be left->right order on plot
 neta_poinc = 12  # Number of eta initial conditions for poincare
 ns_poinc = 60  # Number of s initial conditions for poincare
 Nmaps = 1500  # Number of Poincare return maps to compute
