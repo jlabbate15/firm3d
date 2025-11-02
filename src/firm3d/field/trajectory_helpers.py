@@ -707,9 +707,10 @@ class TrappedPoincare:
 
         # Create mesh grid if not provided directly
         if not hasattr(self, "s_init") or not hasattr(self, "etas_init"):
-            etas = np.linspace(0, 2 * np.pi, self.neta_poinc, endpoint=False)
-            # etas = np.linspace(0, np.pi, self.neta_poinc, endpoint=False)
-            s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::]
+            etas = np.linspace(0, 2 * np.pi, self.neta_poinc)
+            # etas = np.linspace(0, 2 * np.pi, self.neta_poinc, endpoint=False)
+            # s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] # avoids s=0 and s=1
+            s = np.linspace(0.1, 0.9, self.ns_poinc)
             etas2d, s2d = np.meshgrid(etas, s)
             etas2d = etas2d.flatten()
             s2d = s2d.flatten()

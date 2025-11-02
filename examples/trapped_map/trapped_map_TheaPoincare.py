@@ -21,10 +21,10 @@ import matplotlib.pyplot as plt
 # COMMON USER INPUTS #
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
 Ekins = FUSION_ALPHA_PARTICLE_ENERGY*np.array([1,0.02857142857142857]) # left->right order will be left->right order on plot
-neta_poinc = 12  # Number of eta initial conditions for poincare
-ns_poinc = 60  # Number of s initial conditions for poincare
-Nmaps = 1500  # Number of Poincare return maps to compute
-modBin = 5.95
+neta_poinc = 7  # Number of eta initial conditions for poincare
+ns_poinc = 40  # Number of s initial conditions for poincare
+Nmaps = 1000  # Number of Poincare return maps to compute
+modBin = 6.05
 tmax = 1e-2
 #######################
 
