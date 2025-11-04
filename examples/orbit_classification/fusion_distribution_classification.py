@@ -38,13 +38,13 @@ except ImportError:
 time1 = time.time()
 
 resolution = 48  # Resolution for field interpolation
-nParticles = 1500  # Number of particles to trace
+nParticles = 750  # Number of particles to trace
 reltol = 1e-8  # Relative tolerance for the ODE solver
 abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-tmax = 1e-1  # Time for integration
+tmax = 1e-4  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
 nzeta_interp = resolution

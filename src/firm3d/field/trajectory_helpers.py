@@ -766,8 +766,8 @@ class TrappedPoincare:
             for _jj in range(self.Nmaps):
                 try:
                     # Apply trapped map twice to return to same vpar = 0 plane
-                    tr, time = self.trapped_map(tr)
-                    tr, time = self.trapped_map(tr)
+                    tr, time1 = self.trapped_map(tr)
+                    tr, time2 = self.trapped_map(tr)
                     if np.abs(tr[1] - chis_traj[-1]) > 2 * np.pi:
                         warn(
                             "Barely trapped particle detected in trapped_map.",
@@ -778,7 +778,7 @@ class TrappedPoincare:
                     s_traj.append(tr[0])
                     chis_traj.append(tr[1])
                     etas_traj.append(tr[2])
-                    t_traj.append(time)
+                    t_traj.append(time1+time2)
                 except RuntimeError:
                     broken = True
                     break
@@ -800,7 +800,7 @@ class TrappedPoincare:
 
         return s_all, chis_all, etas_all, t_all
 
-    def plot_poincare(self, ax=None, j=0, filename="trapped_poincare.pdf",save_points=False):
+    '''def plot_poincare(self, ax=None, j=0, filename="trapped_poincare.pdf",save_points=False): # for Thea
         r"""
         Plot the trapped Poincare map and save to a file. It is recommended to only
         call this function on MPI rank 0.
@@ -852,7 +852,58 @@ class TrappedPoincare:
                 
         # plt.savefig(filename)
 
-        return ax
+        return ax'''
+
+    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf",save_points=False,num=0):
+            r"""
+            Plot the trapped Poincare map and save to a file. It is recommended to only
+            call this function on MPI rank 0.
+
+            Args:
+                ax : Matplotlib axis to plot on. If None, a new figure and axis are
+                    created.
+                filename : Name of the file to save the plot
+                        (default: 'trapped_poincare.pdf').
+            Returns:
+                ax : The Matplotlib axis containing the plot.
+            """
+            import matplotlib
+
+            matplotlib.use("Agg")  # Don't use interactive backend
+            import matplotlib.pyplot as plt
+
+            if ax is None:
+                fig, ax = plt.subplots()
+
+            ax.set_xlabel(r"$\eta$")
+            ax.set_ylabel(r"$s$")
+            ax.set_xlim([0, 2 * np.pi])
+            ax.set_ylim([0, 1])
+            eta_points = []
+            s_points = []
+            for i in range(len(self.etas_all)):
+                ax.scatter(
+                    np.mod(self.etas_all[i], 2 * np.pi),
+                    self.s_all[i],
+                    marker="o",
+                    s=0.5,
+                    edgecolors="none",
+                )
+                if save_points:
+                    # print(self.etas_all[i])
+                    # print(np.mod(self.etas_all[i], 2 * np.pi))
+                    eta_points.append(np.mod(self.etas_all[i], 2 * np.pi))
+                    s_points.append(np.sqrt(self.s_all[i]))
+            if save_points and num==0:
+                np.save(filename+'_etas0',np.array(eta_points,dtype=object))
+                np.save(filename+'_s0',np.array(s_points,dtype=object))
+                # plt.savefig(filename)
+            if save_points and num==1:
+                np.save(filename+'_etas1',np.array(eta_points,dtype=object))
+                np.save(filename+'_s1',np.array(s_points,dtype=object))
+                # plt.savefig(filename)
+
+            return ax
 
     def get_poincare_data(self):
         """
