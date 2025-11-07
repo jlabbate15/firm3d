@@ -44,7 +44,7 @@ abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
 boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-tmax = 1e-4  # Time for integration
+tmax = 1e-2  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
 nzeta_interp = resolution
@@ -81,11 +81,13 @@ print('here1')
 # nD = lambda s: (1 - s**5)  # Normalized density
 # nT = nD
 # T = lambda s: 11.5 * (1 - s)  # Temperature in keV
-nD = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(2/3)
-nT = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(1/3)
-T0=11.2 # keV
 n0 = 2.76e20 # m^(-3)
-T = lambda s: T0 * nT(s)
+nD = lambda s: n0*(0.5*(1-s) + 0.5*(1-s)**2)**(2/3)
+nT = nD
+temp = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(1/3)
+T0=11.2 # keV
+
+T = lambda s: T0 * temp(s)
 
 
 # D-T cross-section

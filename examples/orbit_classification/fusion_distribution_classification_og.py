@@ -38,12 +38,12 @@ except ImportError:
 time1 = time.time()
 
 resolution = 48  # Resolution for field interpolation
-nParticles = 5000  # Number of particles to trace
+nParticles = 100000  # Number of particles to trace
 reltol = 1e-8  # Relative tolerance for the ODE solver
 abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
-boozmn_filename = "../inputs/wout_QI_nfp3_rescaled.nc"
+boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
 tmax = 1e-2  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
@@ -88,8 +88,8 @@ def sigmav(T):
 
 
 # Reactivity profile
-reactivity = lambda s: nD(s) * nT(s) * sigmav(T(s))
-
+reactivity = lambda s: nD(s) * nT(s) * sigmav(T(s)) # missing prefactor from Bader 2021, Bader, A., et al. "Modeling of energetic particle transport in optimized stellarators." Nuclear Fusion 61.11 (2021): 116060.
+# 3.6e-(18)
 points_init = initialize_position_profile(
     field, nParticles, reactivity, comm=comm, seed=0
 )
@@ -128,14 +128,14 @@ for iParticle in range(first, last):
     bounce_times = []
     if len(res_hit) > 0:
         if np.any(res_hit[:, 1] == -1):  # Particle was lost to the wall
-            np.savetxt("data_QI/particle_" + str(iParticle) + "_traj.txt", res_ty)
-            np.savetxt("data_QI/particle_" + str(iParticle) + "_hits.txt", res_hit)
+            np.savetxt("data_QA/particle_" + str(iParticle) + "_traj.txt", res_ty)
+            np.savetxt("data_QA/particle_" + str(iParticle) + "_hits.txt", res_hit)
         else:
             continue  # Particle was not lost to the wall, skip
 
         oc = OrbitClassification(field, Ekin, mass, charge, helicity_M, helicity_N)
         particle_dict = oc.classify_orbit(res_ty, res_hit)
-        np.savez(f"data_QI/particle_{iParticle}.npz", **particle_dict)
+        np.savez(f"data_QA/particle_{iParticle}.npz", **particle_dict)
 
 proc0_print(
     f"Total time for tracing and classifying particles: "

@@ -41,7 +41,7 @@ s_mirror = 0.2**2  # flux surface for mirroring
 theta_mirror = np.pi / 2  # poloidal angle for mirroring
 zeta_mirror = 0
 helicity_M = 1  # helicity of field strength contours
-helicity_N = -1
+helicity_N = -4
 degree = 3  # Degree for Lagrange interpolation
 
 
