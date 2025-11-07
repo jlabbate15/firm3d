@@ -38,7 +38,7 @@ except ImportError:
 time1 = time.time()
 
 resolution = 48  # Resolution for field interpolation
-nParticles = 750  # Number of particles to trace
+nParticles = int(1e5)  # Number of particles to trace
 reltol = 1e-8  # Relative tolerance for the ODE solver
 abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
@@ -78,9 +78,14 @@ print('here1')
 # Define fusion birth distribution
 # Bader, A., et al. "Modeling of energetic particle transport in optimized
 # stellarators." Nuclear Fusion 61.11 (2021): 116060.
-nD = lambda s: (1 - s**5)  # Normalized density
-nT = nD
-T = lambda s: 11.5 * (1 - s)  # Temperature in keV
+# nD = lambda s: (1 - s**5)  # Normalized density
+# nT = nD
+# T = lambda s: 11.5 * (1 - s)  # Temperature in keV
+nD = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(2/3)
+nT = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(1/3)
+T0=11.2 # keV
+n0 = 2.76e20 # m^(-3)
+T = lambda s: T0 * nT(s)
 
 
 # D-T cross-section
@@ -134,14 +139,14 @@ for iParticle in range(first, last):
     bounce_times = []
     if len(res_hit) > 0:
         if np.any(res_hit[:, 1] == -1):  # Particle was lost to the wall
-            np.savetxt("particle_" + str(iParticle) + "_traj.txt", res_ty)
-            np.savetxt("particle_" + str(iParticle) + "_hits.txt", res_hit)
+            np.savetxt("data/particle_" + str(iParticle) + "_traj.txt", res_ty)
+            np.savetxt("data/particle_" + str(iParticle) + "_hits.txt", res_hit)
         else:
             continue  # Particle was not lost to the wall, skip
 
         oc = OrbitClassification(field, Ekin, mass, charge, helicity_M, helicity_N)
         particle_dict = oc.classify_orbit(res_ty, res_hit)
-        np.savez(f"particle_{iParticle}.npz", **particle_dict)
+        np.savez(f"data/particle_{iParticle}.npz", **particle_dict)
 
 proc0_print(
     f"Total time for tracing and classifying particles: "

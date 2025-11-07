@@ -17,14 +17,14 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 
 
 # COMMON USER INPUTS #
-boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY*0.001
-neta_poinc = 5  # Number of eta initial conditions for poincare
-ns_poinc = 120  # Number of s initial conditions for poincare
-Nmaps = 1000  # Number of Poincare return maps to compute
-modBin = 5.95
+boozmn_filename = "boozmn_new_QH_aScaling.nc"
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
+neta_poinc = 3  # Number of eta initial conditions for poincare
+ns_poinc = 50  # Number of s initial conditions for poincare
+Nmaps = 750  # Number of Poincare return maps to compute
+modBin = 5.83
 call_DESC = False
-tmax = 1e-2
+tmax = 1e-4
 #######################
 
 
@@ -41,7 +41,7 @@ s_mirror = 0.2**2  # flux surface for mirroring
 theta_mirror = np.pi / 2  # poloidal angle for mirroring
 zeta_mirror = 0
 helicity_M = 1  # helicity of field strength contours
-helicity_N = 0
+helicity_N = -1
 degree = 3  # Degree for Lagrange interpolation
 
 
@@ -52,8 +52,8 @@ time1 = time.time()
 
 # print("start BRI")
 
-# bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
-bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
+bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
+# bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
 
 # print("start IBF")
 
@@ -126,13 +126,16 @@ omega_eta_prof, omega_b_prof, s_prof = poinc.compute_frequencies()
 #     ax.figure.savefig('poincare_objective_overlay.png')
 
 # if verbose and not call_DESC:
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(nrows=1, ncols=2)
-ax[0] = poinc.plot_poincare(ax=ax)
-ax[1].plot(omega_eta_prof/omega_b_prof,s_prof**0.5)
-ax[1].set_xlabel(r'$\omega_{\zeta}$')
-ax[1].yaxis.set_label_position("right")
-ax[1].yaxis.tick_right()
-ax[1].set_ylabel(r'$\rho$')
-ax[1].set_ylim(0.0,1.0)
-plt.savefig("poincare_omega.pdf")
+# import matplotlib.pyplot as plt
+# fig, ax = plt.subplots(nrows=1, ncols=2)
+# ax[0] = poinc.plot_poincare(ax=ax)
+# ax[1].plot(omega_eta_prof/omega_b_prof,s_prof**0.5)
+# ax[1].set_xlabel(r'$\omega_{\zeta}$')
+# ax[1].yaxis.set_label_position("right")
+# ax[1].yaxis.tick_right()
+# ax[1].set_ylabel(r'$\rho$')
+# ax[1].set_ylim(0.0,1.0)
+# plt.savefig("poincare_omega.pdf")
+
+np.save("data/omega_eta_FIRM3D_QH",omega_eta_prof/omega_b_prof)
+np.save("data/s_prof_FIRM3D_QH",s_prof)
