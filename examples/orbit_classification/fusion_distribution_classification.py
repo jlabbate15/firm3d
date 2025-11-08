@@ -38,12 +38,13 @@ except ImportError:
 time1 = time.time()
 
 resolution = 48  # Resolution for field interpolation
-nParticles = int(1e5)  # Number of particles to trace
+# nParticles = int(1e5)  # Number of particles to trace
+nParticles = int(1e3)
 reltol = 1e-8  # Relative tolerance for the ODE solver
 abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
-boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
+boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc" # should probably regenerate QI, QH cases too
 tmax = 1e-2  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
@@ -62,7 +63,7 @@ dt_save = 1e-7  # Time interval for saving trajectory points
 ## Setup radial interpolation
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm)
 
-print('here0')
+# print('here0')
 
 ## Setup 3d interpolation
 field = InterpolatedBoozerField(
@@ -73,7 +74,7 @@ field = InterpolatedBoozerField(
     nzeta_interp=nzeta_interp,
 )
 
-print('here1')
+# print('here1')
 
 # Define fusion birth distribution
 # Bader, A., et al. "Modeling of energetic particle transport in optimized
@@ -112,7 +113,7 @@ charge = ALPHA_PARTICLE_CHARGE
 vpar0 = np.sqrt(2 * Ekin / mass)
 vpar_init = initialize_velocity_uniform(vpar0, nParticles, comm=comm, seed=0)
 
-print('here3')
+# print('here3')
 
 first, last = parallel_loop_bounds(comm, nParticles)
 for iParticle in range(first, last):
@@ -141,14 +142,14 @@ for iParticle in range(first, last):
     bounce_times = []
     if len(res_hit) > 0:
         if np.any(res_hit[:, 1] == -1):  # Particle was lost to the wall
-            np.savetxt("data/particle_" + str(iParticle) + "_traj.txt", res_ty)
-            np.savetxt("data/particle_" + str(iParticle) + "_hits.txt", res_hit)
+            np.savetxt("data_QA/particle_" + str(iParticle) + "_traj.txt", res_ty)
+            np.savetxt("data_QA/particle_" + str(iParticle) + "_hits.txt", res_hit)
         else:
             continue  # Particle was not lost to the wall, skip
 
         oc = OrbitClassification(field, Ekin, mass, charge, helicity_M, helicity_N)
         particle_dict = oc.classify_orbit(res_ty, res_hit)
-        np.savez(f"data/particle_{iParticle}.npz", **particle_dict)
+        np.savez(f"data_QA/particle_{iParticle}.npz", **particle_dict)
 
 proc0_print(
     f"Total time for tracing and classifying particles: "
