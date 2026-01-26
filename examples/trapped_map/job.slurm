@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -N 8
+#SBATCH -N 1
 #SBATCH -C cpu
-#SBATCH -q debug
+#SBATCH -q regular
 #SBATCH -J poincare_gen
 #SBATCH -A m4680
 #SBATCH -t 0:30:0

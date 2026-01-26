@@ -17,14 +17,15 @@ from firm3d.util.mpi import comm_size, comm_world, verbose
 
 
 # COMMON USER INPUTS #
-boozmn_filename = "boozmn_new_QH_aScaling.nc"
-Ekin = FUSION_ALPHA_PARTICLE_ENERGY*1
-neta_poinc = 3  # Number of eta initial conditions for poincare
-ns_poinc = 50  # Number of s initial conditions for poincare
-Nmaps = 750  # Number of Poincare return maps to compute
-modBin = 5.83
-call_DESC = False
-tmax = 1e-4
+boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
+Ekin = FUSION_ALPHA_PARTICLE_ENERGY*0.00001
+neta_poinc = 20  # Number of eta initial conditions for poincare
+ns_poinc = 40  # Number of s initial conditions for poincare
+Nmaps = 2500  # Number of Poincare return maps to compute
+# modBins = np.linspace(5.8,6.5,15) # T
+modBins = [5.95] # T
+# call_DESC = False
+tmax = 1e-1
 #######################
 
 
@@ -41,7 +42,7 @@ s_mirror = 0.2**2  # flux surface for mirroring
 theta_mirror = np.pi / 2  # poloidal angle for mirroring
 zeta_mirror = 0
 helicity_M = 1  # helicity of field strength contours
-helicity_N = -4
+helicity_N = 0
 degree = 3  # Degree for Lagrange interpolation
 
 
@@ -52,8 +53,8 @@ time1 = time.time()
 
 # print("start BRI")
 
-bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
-# bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
+# bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
+bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
 
 # print("start IBF")
 
@@ -66,36 +67,52 @@ field = InterpolatedBoozerField(
     stellsym=True
 )
 
-print("start tracing")
+# Omega_eta_arr = np.zeros((len(modBins),ns_poinc)) # Bc, rho
+# s_arr = np.zeros((len(modBins),ns_poinc)) # Bc, rho
 
-poinc = TrappedPoincare(
-    field,
-    helicity_M,
-    helicity_N,
-    s_mirror,
-    theta_mirror,
-    zeta_mirror,
-    mass,
-    charge,
-    Ekin,
-    modBin=modBin,
-    ns_poinc=ns_poinc,
-    neta_poinc=neta_poinc,
-    Nmaps=Nmaps,
-    comm=comm_world,
-    solver_options={"reltol": tol, "abstol": tol, "axis": 0},
-    tmax=tmax,
-    s_init=(np.linspace(0,1,ns_interp))**2
-)
+Omega_eta_arr = []
+s_arr = []
+
+print("start tracing")
+i=0
+for modBin in modBins:
+    poinc = TrappedPoincare(
+        field,
+        helicity_M,
+        helicity_N,
+        s_mirror,
+        theta_mirror,
+        zeta_mirror,
+        mass,
+        charge,
+        Ekin,
+        modBin=modBin,
+        ns_poinc=ns_poinc,
+        neta_poinc=neta_poinc,
+        Nmaps=Nmaps,
+        comm=comm_world,
+        solver_options={"reltol": tol, "abstol": tol, "axis": 0},
+        tmax=tmax,
+        # s_init=(np.linspace(0,1,ns_interp+2)[1:-1])**2,
+        # etas_init = np.linspace(0,2*np.pi,neta_poinc)
+    )
+
+    # Compute frequencies
+    omega_eta_prof, omega_b_prof, s_prof = poinc.compute_frequencies()
+
+    np.save("dataLOWE/Omega_eta_arr"+str(modBin),omega_eta_prof / omega_b_prof,allow_pickle=True)
+    np.save("dataLOWE/s_arr"+str(modBin),s_prof,allow_pickle=True)
+    np.save("dataLOWE/Bcrits"+str(modBin),modBins,allow_pickle=True)
+    # poinc.plot_poincare(filename='lowE_trapped_poincare_Bc'+str(modBin)+'.pdf',savefig=True,save_points=True,num=2)
+
+    i+=1
 
 time2 = time.time()
 
 proc0_print("poincare time: ", time2 - time1)
+# print(omega_eta_prof.shape)
 
-# Compute frequencies
-omega_eta_prof, omega_b_prof, s_prof = poinc.compute_frequencies()
-
-# Extra plotting: Plotting the objective function over the Poincare plot
+'''# Extra plotting: Plotting the objective function over the Poincare plot
 # Plot objective function value on top of it
 # if call_DESC:
 #     import matplotlib.pyplot as plt
@@ -135,7 +152,4 @@ omega_eta_prof, omega_b_prof, s_prof = poinc.compute_frequencies()
 # ax[1].yaxis.tick_right()
 # ax[1].set_ylabel(r'$\rho$')
 # ax[1].set_ylim(0.0,1.0)
-# plt.savefig("poincare_omega.pdf")
-
-np.save("data/omega_eta_FIRM3D_QH",omega_eta_prof/omega_b_prof)
-np.save("data/s_prof_FIRM3D_QH",s_prof)
+# plt.savefig("poincare_omega.pdf")'''

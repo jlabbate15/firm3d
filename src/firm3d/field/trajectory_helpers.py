@@ -622,7 +622,7 @@ class TrappedPoincare:
                 # MinToroidalFluxStoppingCriterion(0.0001),
                 MaxToroidalFluxStoppingCriterion(1.0),
             ],
-            forget_exact_path=False,
+            forget_exact_path=True,
             vpars_stop=True,
             **self.solver_options,
         )
@@ -709,7 +709,9 @@ class TrappedPoincare:
         if not hasattr(self, "s_init") or not hasattr(self, "etas_init"):
             etas = np.linspace(0, 2 * np.pi, self.neta_poinc, endpoint=False)
             # etas = np.linspace(0, np.pi, self.neta_poinc, endpoint=False)
-            s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::]
+            # s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] # original
+            s = ( np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] )**2 # rho-modified original
+            # s = np.linspace(0.1, 0.9, self.ns_poinc) # for frequency comparison
             etas2d, s2d = np.meshgrid(etas, s)
             etas2d = etas2d.flatten()
             s2d = s2d.flatten()
@@ -722,6 +724,8 @@ class TrappedPoincare:
         etas_init = []
         first, last = parallel_loop_bounds(self.comm, len(etas2d))
         # For each point, find the mirror point in chi
+        # np.save('TEST_s',s2d)
+        # print('SAVE TEST DONE')
         for i in range(first, last):
             try:
                 chi = chi_mirror_func(s2d[i], etas2d[i])
@@ -854,7 +858,7 @@ class TrappedPoincare:
 
         return ax'''
 
-    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf",save_points=False,num=0):
+    def plot_poincare(self, ax=None, filename="trapped_poincare.pdf",save_points=False,num=0,savefig=False):
             r"""
             Plot the trapped Poincare map and save to a file. It is recommended to only
             call this function on MPI rank 0.
@@ -875,8 +879,10 @@ class TrappedPoincare:
             if ax is None:
                 fig, ax = plt.subplots()
 
+            colors = ['b','r','b']
+
             ax.set_xlabel(r"$\eta$")
-            ax.set_ylabel(r"$s$")
+            ax.set_ylabel(r"$\rho$")
             ax.set_xlim([0, 2 * np.pi])
             ax.set_ylim([0, 1])
             eta_points = []
@@ -884,16 +890,17 @@ class TrappedPoincare:
             for i in range(len(self.etas_all)):
                 ax.scatter(
                     np.mod(self.etas_all[i], 2 * np.pi),
-                    self.s_all[i],
+                    np.sqrt(self.s_all[i]), # plot rho
                     marker="o",
-                    s=0.5,
+                    s=0.35,
                     edgecolors="none",
+                    c=colors[num] # uncomment to set solid colors
                 )
                 if save_points:
                     # print(self.etas_all[i])
                     # print(np.mod(self.etas_all[i], 2 * np.pi))
                     eta_points.append(np.mod(self.etas_all[i], 2 * np.pi))
-                    s_points.append(np.sqrt(self.s_all[i]))
+                    s_points.append(self.s_all[i])
             if save_points and num==0:
                 np.save(filename+'_etas0',np.array(eta_points,dtype=object))
                 np.save(filename+'_s0',np.array(s_points,dtype=object))
@@ -902,6 +909,12 @@ class TrappedPoincare:
                 np.save(filename+'_etas1',np.array(eta_points,dtype=object))
                 np.save(filename+'_s1',np.array(s_points,dtype=object))
                 # plt.savefig(filename)
+            if save_points and num==2:
+                np.save(filename+'_etas_',np.array(eta_points,dtype=object))
+                np.save(filename+'_s1_',np.array(s_points,dtype=object))
+            if savefig:
+                plt.savefig(filename)
+
 
             return ax
 
@@ -943,8 +956,9 @@ class TrappedPoincare:
         omega_eta = []
         omega_b = []
         init_s = []
+        # print('s_all shape: '+str(np.array(self.s_all).shape))
         for s_traj, _chi_traj, eta_traj, t_traj in zip(
-            self.s_all, self.chis_all, self.etas_all, self.t_all
+            self.s_all, self.chis_all, self.etas_all, self.t_all # s_all has the shape (ns_poinc*neta_poinc that have a defined mapping,Nmaps)
         ):
             if (
                 len(s_traj) < 2
@@ -962,7 +976,11 @@ class TrappedPoincare:
         omega_b = np.array(omega_b)
         init_s = np.array(init_s)
 
-        s_prof = np.unique(init_s)
+        init_s = np.around(init_s,3) # should add or use different logic because this will give the wrong answer (likely will not do the eta average) due to rounding errors
+
+        s_prof = np.unique(init_s) # has shape (ns_poinc*neta_poinc that have a defined mapping)
+        # print(s_prof)
+        # print(s_prof.shape)
         omega_eta_prof = np.zeros((len(s_prof),))
         omega_b_prof = np.zeros((len(s_prof),))
 

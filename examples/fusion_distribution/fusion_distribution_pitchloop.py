@@ -15,6 +15,7 @@ from firm3d.field.tracing import (
 from firm3d.field.tracing_helpers import (
     initialize_position_profile,
     initialize_velocity_uniform,
+    initialize_position_uniform_vol,
 )
 from firm3d.util.constants import (
     ALPHA_PARTICLE_MASS,
@@ -43,7 +44,7 @@ abstol = 1e-8  # Absolute tolerance for the ODE solver
 order = 3  # Order for radial interpolation
 degree = 3  # Degree for 3d interpolation
 boozmn_filename = "boozmn_equil_G1600_DESC_fixed.nc"
-tmax = 0.005  # Time for integration
+# tmax = 0.005  # Time for integration
 ns_interp = resolution
 ntheta_interp = resolution
 nzeta_interp = resolution
@@ -69,7 +70,7 @@ field = InterpolatedBoozerField(
 # nD = lambda s: (1 - s**5)  # Normalized density
 # nT = nD
 # T = lambda s: 11.5 * (1 - s)  # Temperature in keV
-
+''' uncomment if not using uniform position initialization
 nD = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(2/3)
 nT = lambda s: (0.5*(1-s) + 0.5*(1-s)**2)**(1/3)
 T0=11.2 # keV
@@ -85,7 +86,7 @@ def sigmav(T):
 
 
 # Reactivity profile
-reactivity = lambda s: nD(s) * nT(s) * sigmav(T(s))
+reactivity = lambda s: nD(s) * nT(s) * sigmav(T(s))'''
 
 
 from firm3d.field.trajectory_helpers import compute_loss_fraction
@@ -97,9 +98,11 @@ import matplotlib
 matplotlib.use("Agg")  # Don't use interactive backend
 import matplotlib.pyplot as plt
 
-pitch_invs = np.linspace(5.8,6.65,12)
+pitch_invs = np.linspace(5.8,6.5,15)
 
-points = initialize_position_profile(field, nParticles, reactivity, comm=comm)
+# points = initialize_position_profile(field, nParticles, reactivity, comm=comm)
+
+points = initialize_position_uniform_vol(field,nparticles=nParticles,comm=comm)
 
 Ekin = FUSION_ALPHA_PARTICLE_ENERGY
 mass = ALPHA_PARTICLE_MASS

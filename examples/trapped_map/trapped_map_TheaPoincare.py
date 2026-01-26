@@ -19,13 +19,13 @@ import matplotlib.pyplot as plt
 
 
 # COMMON USER INPUTS #
-boozmn_filename = "../inputs/boozmn_equil_G1600_DESC_fixed.nc"
+boozmn_filename = "/Users/paullab/codes/firm3d_fork_10132025/firm3d/examples/inputs/boozmn_equil_G1600_DESC_fixed.nc"
 Ekins = FUSION_ALPHA_PARTICLE_ENERGY*np.array([1,0.02857142857142857]) # left->right order will be left->right order on plot
-neta_poinc = 12  # Number of eta initial conditions for poincare
-ns_poinc = 60  # Number of s initial conditions for poincare
-Nmaps = 1500  # Number of Poincare return maps to compute
-modBin = 5.95
-tmax = 1e-2
+neta_poinc = 10  # Number of eta initial conditions for poincare, originally 12
+ns_poinc = 50  # Number of s initial conditions for poincare, originally 60
+Nmaps = 1000  # Number of Poincare return maps to compute, originally 1500
+modBin = 5.95 # T
+tmax = 1e-2 # originally was 1e-2
 #######################
 
 fig, ax = plt.subplots(nrows=1, ncols=3) # setup for plotting
@@ -42,7 +42,7 @@ tol = 1e-8  # Tolerance for ODE solver
 s_mirror = 0.2**2  # flux surface for mirroring
 theta_mirror = np.pi / 2  # poloidal angle for mirroring
 zeta_mirror = 0
-helicity_M = 1  # helicity of field strength contours
+helicity_M = 1  # helicity of field strength contours, 0 for QI, 1 for QA
 helicity_N = 0
 degree = 3  # Degree for Lagrange interpolation
 
@@ -56,7 +56,6 @@ degree = 3  # Degree for Lagrange interpolation
 print("Start frequency profiles")
 bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world, helicity_N=helicity_N, helicity_M=helicity_M) # specify helicities to filter QS-breaking modes
 # bri = BoozerRadialInterpolant(boozmn_filename, order, no_K=True, comm=comm_world)
-
 # print("start IBF")
 
 field = InterpolatedBoozerField(
@@ -120,7 +119,7 @@ field = InterpolatedBoozerField(
     stellsym=True
 )
 
-# print("start tracing")
+print("start tracing")
 i=0
 for Ekin in Ekins:
     time1 = time.time()
@@ -147,7 +146,7 @@ for Ekin in Ekins:
     time2 = time.time()
     proc0_print("poincare tracing time: ", time2 - time1)
 
-    ax = poinc.plot_poincare(ax=ax,j=i,filename='poinc_'+str(i),save_points=True)
+    ax[i] = poinc.plot_poincare(ax=ax[i],num=i,filename='poinc_'+str(i),save_points=True)
     
     i+=1
 
@@ -177,15 +176,15 @@ for p in range(1,p_max+1): # include the zero resonance
 # Omega Zeta Plot (figure c)
 ax[2].plot(omega_zetas[0],s_profs[0]**0.5,'b',label=r"KE = $3.5$ MeV")
 ax[2].plot(omega_zetas[1],s_profs[1]**0.5,'r',label=r"KE = $0.001 * 3.5$ MeV")
-ax[2].set_xlabel(r'$\omega_{\zeta}$')
+ax[2].set_xlabel(r'$\Omega_{\eta}$')
 ax[2].yaxis.set_label_position("right")
 ax[2].yaxis.tick_right()
 ax[2].set_ylabel(r'$\rho$')
 ax[2].set_ylim(0.0,1.0)
 ax[2].set_xlim(-2.1,0.1)
 ax[2].legend(loc='upper left',bbox_to_anchor=(-1.46, 1.15))
-ax[0].set_xlim([0,np.pi])
-ax[1].set_xlim([0,np.pi])
+ax[0].set_xlim([0,2*np.pi])
+ax[1].set_xlim([0,2*np.pi])
 ax[0].set_xticks([0, 1, 2, 3])
 ax[0].set_xticklabels([str(0), str(1), str(2), str(3)])
 ax[1].set_xticks([0, 1, 2, 3])
@@ -211,12 +210,12 @@ for res in res_arr:
                         x_plot = x
                         k_plot = k
                     k+=1
-                ax[2].plot(x_plot,ses[k_plot],colors_plot[i])
+                ax[2].plot(x_plot,ses[k_plot],colors_plot[i]) # uncomment to plot resonance crossings
         i+=1
 
 # Extra for Poincare Plot 1
 ax[1].yaxis.set_visible(False)
-plt.savefig("poincare_omega_Thea.pdf")
+plt.savefig("poincare_omega_Thea_paper.pdf")
 
-np.save("freq",np.array(omega_zetas,dtype=object))
-np.save("s",np.array(s_profs,dtype=object))
+np.save("freq_Thea_paper",np.array(omega_zetas,dtype=object))
+np.save("s_Thea_paper",np.array(s_profs,dtype=object))

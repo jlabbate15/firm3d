@@ -15,7 +15,7 @@ from firm3d.util.constants import (
 from firm3d.util.functions import proc0_print, setup_logging
 from firm3d.util.mpi import comm_size, comm_world, verbose
 
-boozmn_filename = "../inputs/boozmn_nfp3_rescaled.nc"
+boozmn_filename = "/Users/paullab/codes/Equilibria/APS 2025 Poster/QI/boozmn2_wout_betaSQuIDhs.nc"
 
 charge = ALPHA_PARTICLE_CHARGE
 mass = ALPHA_PARTICLE_MASS
@@ -69,11 +69,15 @@ poinc = TrappedPoincare(
     comm=comm_world,
     solver_options={"reltol": tol, "abstol": tol, "axis": 0},
     tmax=1e-4,
+    modBin=6.25
 )
 
+verbose=True
+import matplotlib.pyplot as plt
+fig,ax = plt.subplots(nrows=1,ncols=2)
 if verbose:
-    poinc.plot_poincare(filename="trapped_map_QI.pdf")
-
+    poinc.plot_poincare(filename="trapped_map_QI.pdf",save_points=True,ax=ax)
+plt.savefig('trapped_poincare_QI.png')
 time2 = time.time()
 
 proc0_print("poincare time: ", time2 - time1)
