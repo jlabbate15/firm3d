@@ -619,7 +619,7 @@ class TrappedPoincare:
             Ekin=self.Ekin,
             vpars=[0],
             stopping_criteria=[
-                # MinToroidalFluxStoppingCriterion(0.0001),
+                # MinToroidalFluxStoppingCriterion(0.05),
                 MaxToroidalFluxStoppingCriterion(1.0),
             ],
             forget_exact_path=True,
@@ -707,14 +707,16 @@ class TrappedPoincare:
 
         # Create mesh grid if not provided directly
         if not hasattr(self, "s_init") or not hasattr(self, "etas_init"):
+            print('here - used linspace specification not s_init')
             etas = np.linspace(0, 2 * np.pi, self.neta_poinc, endpoint=False)
             # etas = np.linspace(0, np.pi, self.neta_poinc, endpoint=False)
-            # s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] # original
-            s = ( np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] )**2 # rho-modified original
+            s = np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] # original
+            # s = ( np.linspace(0, 1.0, self.ns_poinc + 1, endpoint=False)[1::] )**0.5 # rho-modified original
             # s = np.linspace(0.1, 0.9, self.ns_poinc) # for frequency comparison
             etas2d, s2d = np.meshgrid(etas, s)
             etas2d = etas2d.flatten()
             s2d = s2d.flatten()
+            print('here')
         else:
             s2d = self.s_init
             etas2d = self.etas_init
@@ -784,7 +786,7 @@ class TrappedPoincare:
                     etas_traj.append(tr[2])
                     t_traj.append(time1+time2)
                 except RuntimeError:
-                    broken = True
+                    # broken = True
                     break
             if not broken:
                 s_all.append(s_traj)
@@ -890,11 +892,13 @@ class TrappedPoincare:
             for i in range(len(self.etas_all)):
                 ax.scatter(
                     np.mod(self.etas_all[i], 2 * np.pi),
-                    np.sqrt(self.s_all[i]), # plot rho
+                    # np.sqrt(self.s_all[i]), # plot rho
+                    self.s_all[i], # plot s
                     marker="o",
                     s=0.35,
+                    # rasterized=True,
                     edgecolors="none",
-                    c=colors[num] # uncomment to set solid colors
+                    # c=colors[num] # uncomment to set solid colors
                 )
                 if save_points:
                     # print(self.etas_all[i])
